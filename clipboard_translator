@@ -1,0 +1,35 @@
+#!/bin/bash
+
+if [ -n "$1" ]; then
+    filename="data/$1"
+else
+    read -p "Enter filename: " filename
+    filename="data/$filename"
+fi
+
+prev_data=""
+
+# continuously monitor the clipboard
+while true; do
+    # get the current clipboard contents
+    clipboard_data="$(xsel -o)"
+
+    # check if the clipboard data has changed
+    if [ "$clipboard_data" != "$prev_data" ]; then
+        # translate the clipboard data to Vietnamese
+        translated_text="$(trans -b -t vi "$clipboard_data")"
+
+        # create a line with the clipboard data and translated text
+        line_to_save="$clipboard_data;$translated_text"
+        line_to_stdout="$clipboard_data"$'\n'">$translated_text"$'\n'
+
+        # append the new line to the file on a new line
+        echo "$line_to_save" >> "$filename"
+        echo "$line_to_stdout"
+
+        prev_data="$clipboard_data"
+    fi
+
+    # wait for 1 second before checking the clipboard again
+    sleep 1
+done
